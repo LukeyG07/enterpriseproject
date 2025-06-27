@@ -1,4 +1,2 @@
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Dashboard loaded');
-  // TODO: load data, render chart, handle feedback form
-});
+// TODO: implement API calls, rendering logic, event handlers
+console.log('Base script loaded');
