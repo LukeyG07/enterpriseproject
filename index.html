@@ -3,36 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PC Parts Retail Dashboard</title>
+  <title>PC Parts Retail</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>PC Parts Retail System</h1>
+    <h1><a href="index.html">PC Parts Retail</a></h1>
     <nav>
       <ul>
-        <li><a href="#data">Data</a></li>
-        <li><a href="#visualizations">Visualizations</a></li>
-        <li><a href="#feedback">Feedback</a></li>
+        <li><a href="catalog.html">Shop</a></li>
+        <li><a href="build-configurator.html">Configurator</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="admin-login.html">Admin</a></li>
+        <li><a href="login.html">Login</a></li>
       </ul>
     </nav>
   </header>
   <main>
-    <section id="data">
-      <h2>Data</h2>
-      <div id="data-table">Placeholder for data display.</div>
+    <section class="hero">
+      <h2>Build Your Dream PC</h2>
+      <p>Browse top-quality components and assemble your perfect rig.</p>
+      <a class="btn" href="catalog.html">Start Shopping</a>
     </section>
-    <section id="visualizations">
-      <h2>Visualizations</h2>
-      <canvas id="chart"></canvas>
-    </section>
-    <section id="feedback">
-      <h2>Feedback</h2>
-      <form id="feedback-form">
-        <textarea id="feedback-input" rows="4" cols="50" placeholder="Your feedback…"></textarea><br>
-        <button type="submit">Submit</button>
-      </form>
-      <div id="feedback-list"></div>
+    <section class="featured">
+      <h2>Featured Products</h2>
+      <div id="featured-list"><!-- JS: load featured products here --></div>
     </section>
   </main>
   <script src="script.js"></script>
