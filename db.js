@@ -21,7 +21,7 @@ async function init() {
       'INSERT INTO users(username,password,full_name,shipping_address,is_admin) VALUES($1,$2,$3,$4,$5)',
       ['admin', hash, 'Administrator', 'Head Office Address', true]
     );
-    console.log('Default admin created: admin / password');
+    console.log('Admin user created: admin / password');
   }
 }
 
