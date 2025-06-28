@@ -18,7 +18,7 @@ init().catch(err => {
   process.exit(1);
 });
 
-// Serve frontend
+// Serve static files from root
 app.use(express.static('./'));
 
 // --- API Endpoints ---
