@@ -3,14 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PC Parts Retail</title>
+  <title>PC Parts Retail Store</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>PC Parts Retail Store</h1>
-  <div id="app">
-    <!-- JS will inject UI here -->
-  </div>
+  <header>
+    <h1>PC Parts Retail Store</h1>
+    <button id="open-cart" class="cart-btn">Cart (<span id="cart-count">0</span>)</button>
+  </header>
+  <main id="app"></main>
+  <aside id="cart" class="hidden">
+    <h2>Your Cart</h2>
+    <ul id="cart-items"></ul>
+    <div>Total: $<span id="cart-total">0.00</span></div>
+    <input type="email" id="checkout-email" placeholder="Enter your email" />
+    <button id="checkout-btn">Checkout</button>
+    <button id="close-cart">Close</button>
+  </aside>
   <script src="app.js"></script>
 </body>
 </html>
