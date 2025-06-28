@@ -70,7 +70,7 @@ await client.query(
 );
 req.session.user = { username, is_admin: false };
 res.json({ success: true });
-} catch {
+} catch (err) {
 res.status(400).json({ error: 'Username taken' });
 }
 });
@@ -103,7 +103,11 @@ res.json(rows);
 });
 
 app.get('/api/products', async (req, res) => {
-const { rows } = await client.query('SELECT p.*, c.name AS category, i.stock FROM products p JOIN categories c ON p.category_id = c.id JOIN inventory i ON p.id = i.product_id');
+const { rows } = await client.query(
+'SELECT p.*, c.name AS category, i.stock FROM products p ' +
+'JOIN categories c ON p.category_id = c.id ' +
+'JOIN inventory i ON p.id = i.product_id'
+);
 res.json(rows);
 });
 
@@ -116,7 +120,8 @@ await client.query('BEGIN');
 let total = 0;
 for (const item of cart) {
 const { rows } = await client.query(
-'SELECT price, i.stock FROM products p JOIN inventory i ON p.id = i.product_id WHERE p.id = $1 FOR UPDATE',
+'SELECT price, i.stock FROM products p JOIN inventory i ON p.id = i.product_id ' +
+'WHERE p.id = $1 FOR UPDATE',
 [item.productId]
 );
 if (!rows.length || rows[0].stock < item.quantity) throw new Error('Out of stock');
@@ -146,10 +151,9 @@ res.status(500).json({ error: err.message });
 // --- ADMIN API ---
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
 const { rows } = await client.query(
-SELECT p.*, c.name AS category, i.stock
-     FROM products p
-     JOIN categories c ON p.category_id = c.id
-     JOIN inventory i ON p.id = i.product_id
+'SELECT p.*, c.name AS category, i.stock FROM products p ' +
+'JOIN categories c ON p.category_id = c.id ' +
+'JOIN inventory i ON p.id = i.product_id'
 );
 res.json(rows);
 });
@@ -159,12 +163,13 @@ const data = req.body;
 const img = req.file ? /uploads/${req.file.filename} : null;
 try {
 const result = await client.query(
-INSERT INTO products(
-         name, category_id, price, description, image_url,
-         socket, ram_type, memory_size, chipset, form_factor,
-         capacity, wattage, efficiency, case_size, fan_size, cooler_type
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id,
-[data.name,data.category_id,data.price,data.description,img,data.socket,data.ram_type,data.memory_size,data.chipset,data.form_factor,data.capacity,data.wattage,data.efficiency,data.case_size,data.fan_size,data.cooler_type]
+'INSERT INTO products(name, category_id, price, description, image_url, ' +
+'socket, ram_type, memory_size, chipset, form_factor, ' +
+'capacity, wattage, efficiency, case_size, fan_size, cooler_type) ' +
+'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id',
+[data.name, data.category_id, data.price, data.description, img,
+data.socket, data.ram_type, data.memory_size, data.chipset, data.form_factor,
+data.capacity, data.wattage, data.efficiency, data.case_size, data.fan_size, data.cooler_type]
 );
 const pid = result.rows[0].id;
 await client.query('INSERT INTO inventory(product_id,stock) VALUES($1,$2)', [pid, data.stock || 0]);
@@ -179,15 +184,22 @@ const id = req.params.id;
 const data = req.body;
 try {
 await client.query(
-UPDATE products SET name=$1, category_id=$2, price=$3, description=$4,
-         socket=$5, ram_type=$6, memory_size=$7, chipset=$8,
-         form_factor=$9, capacity=$10, wattage=$11, efficiency=$12,
-         case_size=$13, fan_size=$14, cooler_type=$15 WHERE id=$16,
-[data.name,data.category_id,data.price,data.description,data.socket,data.ram_type,data.memory_size,data.chipset,data.form_factor,data.capacity,data.wattage,data.efficiency,data.case_size,data.fan_size,data.cooler_type,id]
+'UPDATE products SET name=$1, category_id=$2, price=$3, description=$4, ' +
+'socket=$5, ram_type=$6, memory_size=$7, chipset=$8, ' +
+'form_factor=$9, capacity=$10, wattage=$11, efficiency=$12, ' +
+'case_size=$13, fan_size=$14, cooler_type=$15 WHERE id=$16',
+[data.name, data.category_id, data.price, data.description, data.socket,
+data.ram_type, data.memory_size, data.chipset, data.form_factor,
+data.capacity, data.wattage, data.efficiency, data.case_size, data.fan_size, data.cooler_type, id]
 );
-if (req.file) {const u = /uploads/${req.file.filename}; await client.query('UPDATE products SET image_url=$1 WHERE id=$2',[u,id]);}
+if (req.file) {
+const u = /uploads/${req.file.filename};
+await client.query('UPDATE products SET image_url=$1 WHERE id=$2', [u, id]);
+}
 res.json({ success: true });
-} catch (err) {res.status(500).json({ error: err.message });}
+} catch (err) {
+res.status(500).json({ error: err.message });
+}
 });
 
 app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
@@ -201,7 +213,9 @@ res.json({ success: true });
 });
 
 app.get('/api/admin/orders', requireAdmin, async (req, res) => {
-const { rows } = await client.query('SELECT o.id, u.username, o.total, o.created_at FROM orders o LEFT JOIN users u ON u.id = o.user_id ORDER BY o.created_at DESC');
+const { rows } = await client.query(
+'SELECT o.id, u.username, o.total, o.created_at FROM orders o LEFT JOIN users u ON u.id = o.user_id ORDER BY o.created_at DESC'
+);
 res.json(rows);
 });
 
