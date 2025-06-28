@@ -1,9 +1,9 @@
-// Separate Admin Page Logic
+// public/admin.js: Separate admin page logic
 const apiJson = (path, opts = {}) =>
   fetch(path, { credentials: 'include', ...opts }).then(r => r.json());
 
 (async () => {
-  // Ensure admin
+  // Verify admin
   const { user } = await apiJson('/api/me');
   if (!user || !user.is_admin) {
     alert('Access denied');
@@ -11,13 +11,13 @@ const apiJson = (path, opts = {}) =>
     return;
   }
 
-  // DOM Elements
+  // DOM elements
   const btnHome = document.getElementById('btn-home');
   const btnLogout = document.getElementById('btn-logout-admin');
   const prodBtn = document.getElementById('admin-products');
   const orderBtn = document.getElementById('admin-orders');
-  const prodSection = document.getElementById('admin-products-section');
-  const orderSection = document.getElementById('admin-orders-section');
+  const prodSec = document.getElementById('admin-products-section');
+  const orderSec = document.getElementById('admin-orders-section');
   const newProdBtn = document.getElementById('new-product');
   const prodList = document.getElementById('product-admin-list');
   const ordersList = document.getElementById('orders-list');
@@ -35,14 +35,14 @@ const apiJson = (path, opts = {}) =>
   }
 
   prodBtn.onclick = () => {
-    prodSection.classList.remove('hidden');
-    orderSection.classList.add('hidden');
+    prodSec.classList.remove('hidden');
+    orderSec.classList.add('hidden');
     loadProducts();
   };
 
   orderBtn.onclick = async () => {
-    orderSection.classList.remove('hidden');
-    prodSection.classList.add('hidden');
+    orderSec.classList.remove('hidden');
+    prodSec.classList.add('hidden');
     const ords = await apiJson('/api/admin/orders');
     ordersList.innerHTML = ords
       .map(o =>
@@ -178,7 +178,10 @@ const apiJson = (path, opts = {}) =>
     catSelect.onchange = renderFields;
     renderFields();
 
+    // Cancel
     form.querySelector('#cancel-btn').onclick = loadProducts;
+
+    // Save
     form.querySelector('#save-btn').onclick = async () => {
       const fd = new FormData();
       fd.append('name', form.querySelector('#f-name').value);
@@ -189,9 +192,8 @@ const apiJson = (path, opts = {}) =>
       const imgFile = form.querySelector('#f-image').files[0];
       if (imgFile) fd.append('image', imgFile);
       const cname = categories.find(c => c.id == form.querySelector('#f-cat').value).name;
-      (categoryFields[cname] || []).forEach(fld => {
-        fd.append(fld.id, form.querySelector('#' + fld.id).value);
-      });
+      (categoryFields[cname] || []).forEach(fld => fd.append(fld.id, form.querySelector('#' + fld.id).value));
+
       const url = isNew ? '/api/admin/products' : `/api/admin/products/${p.id}`;
       const method = isNew ? 'POST' : 'PUT';
       const response = await fetch(url, { method, body: fd, credentials: 'include' });
