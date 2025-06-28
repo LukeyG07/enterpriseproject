@@ -1,4 +1,4 @@
--- Drop existing
+-- Drop existing tables
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS inventory;
@@ -16,14 +16,14 @@ INSERT INTO categories(name) VALUES
   ('PSU'),('Case'),('Fan'),('CPU Cooler')
 ON CONFLICT DO NOTHING;
 
--- Products with attributes
+-- Products with image URL and specific attributes
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   category_id INT NOT NULL REFERENCES categories(id),
   price NUMERIC(10,2) NOT NULL,
   description TEXT,
-  -- specific fields
+  image_url TEXT,
   socket TEXT,
   ram_type TEXT,
   memory_size INT,
@@ -54,14 +54,13 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Orders
+-- Orders and items
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(id) ON DELETE SET NULL,
   total NUMERIC(10,2) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE order_items (
   id SERIAL PRIMARY KEY,
   order_id INT REFERENCES orders(id) ON DELETE CASCADE,
