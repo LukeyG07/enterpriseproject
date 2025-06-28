@@ -1,4 +1,4 @@
--- Drop existing tables
+-- Drop tables if existing
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS inventory;
@@ -11,12 +11,11 @@ CREATE TABLE categories (
   id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL
 );
-INSERT INTO categories(name) VALUES
-  ('CPU'),('GPU'),('Motherboard'),('RAM'),
-  ('PSU'),('Case'),('Fan'),('CPU Cooler')
+INSERT INTO categories(name)
+VALUES ('CPU'),('GPU'),('Motherboard'),('RAM'),('PSU'),('Case'),('Fan'),('CPU Cooler')
 ON CONFLICT DO NOTHING;
 
--- Products with image URL and specific attributes
+-- Products (with image_url and specific attributes)
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -54,7 +53,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Orders and items
+-- Orders & Order Items
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(id) ON DELETE SET NULL,
