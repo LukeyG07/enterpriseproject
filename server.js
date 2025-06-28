@@ -1,4 +1,4 @@
-// server.js — single-directory deployment
+// server.js — Single-directory deployment with corrected SQL and uploads handling
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -22,15 +22,13 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Serve everything (HTML/CSS/JS) from project root
+// Serve static assets (HTML/CSS/JS) from root
 app.use(express.static(__dirname));
-
-// Ensure GET / returns index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Prepare uploads folder
+// Setup uploads directory
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 const storage = multer.diskStorage({
@@ -40,22 +38,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.use('/uploads', express.static(uploadsDir));
 
-// Initialize DB & seed admin
+// Initialize DB and seed admin
 init().catch(err => {
   console.error('DB init error:', err);
   process.exit(1);
 });
 
-// Auth helpers
+// Auth middleware
 function requireAuth(req, res, next) {
-  return req.session.user
-    ? next()
-    : res.status(401).json({ error: 'Not logged in' });
+  if (req.session.user) return next();
+  res.status(401).json({ error: 'Not logged in' });
 }
 function requireAdmin(req, res, next) {
-  return (req.session.user && req.session.user.is_admin)
-    ? next()
-    : res.status(403).json({ error: 'Forbidden' });
+  if (req.session.user && req.session.user.is_admin) return next();
+  res.status(403).json({ error: 'Forbidden' });
 }
 
 // --- AUTH ROUTES ---
@@ -83,11 +79,9 @@ app.post('/api/login', async (req, res) => {
     'SELECT * FROM users WHERE username=$1',
     [username]
   );
-  if (!rows.length) {
-    return res.status(400).json({ error: 'Invalid credentials' });
-  }
+  if (!rows.length) return res.status(400).json({ error: 'Invalid credentials' });
   const user = rows[0];
-  if (!(await bcrypt.compare(password, user.password))) {
+  if (!await bcrypt.compare(password, user.password)) {
     return res.status(400).json({ error: 'Invalid credentials' });
   }
   req.session.user = { id: user.id, username: user.username, is_admin: user.is_admin };
@@ -128,8 +122,7 @@ app.post('/api/checkout', requireAuth, async (req, res) => {
     let total = 0;
     for (const item of cart) {
       const { rows } = await client.query(
-        'SELECT price, i.stock FROM products p ' +
-        'JOIN inventory i ON p.id = i.product_id ' +
+        'SELECT price, i.stock FROM products p JOIN inventory i ON p.id = i.product_id ' +
         'WHERE p.id = $1 FOR UPDATE',
         [item.productId]
       );
@@ -138,6 +131,7 @@ app.post('/api/checkout', requireAuth, async (req, res) => {
       }
       total += rows[0].price * item.quantity;
     }
+
     const { rows: orderRows } = await client.query(
       'INSERT INTO orders(user_id, total) VALUES($1, $2) RETURNING id',
       [userId, total]
@@ -145,13 +139,9 @@ app.post('/api/checkout', requireAuth, async (req, res) => {
     const orderId = orderRows[0].id;
 
     for (const item of cart) {
-      const { rows } = await client.query(
-        'SELECT price FROM products WHERE id = $1',
-        [item.productId]
-      );
+      const { rows } = await client.query('SELECT price FROM products WHERE id = $1', [item.productId]);
       await client.query(
-        'INSERT INTO order_items(order_id, product_id, quantity, price) ' +
-        'VALUES($1, $2, $3, $4)',
+        'INSERT INTO order_items(order_id, product_id, quantity, price) VALUES($1, $2, $3, $4)',
         [orderId, item.productId, item.quantity, rows[0].price]
       );
       await client.query(
@@ -181,7 +171,7 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 
 app.post('/api/admin/products', requireAdmin, upload.single('image'), async (req, res) => {
   const data = req.body;
-  const img = req.file ? `/uploads/${req.file.filename}` : null;
+  const img = req.file ? '/uploads/' + req.file.filename : null;
   try {
     const result = await client.query(
       'INSERT INTO products(' +
@@ -196,10 +186,7 @@ app.post('/api/admin/products', requireAdmin, upload.single('image'), async (req
       ]
     );
     const pid = result.rows[0].id;
-    await client.query(
-      'INSERT INTO inventory(product_id,stock) VALUES($1,$2)',
-      [pid, data.stock || 0]
-    );
+    await client.query('INSERT INTO inventory(product_id,stock) VALUES($1,$2)', [pid, data.stock || 0]);
     res.json({ success: true, pid });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -215,8 +202,7 @@ app.put('/api/admin/products/:id', requireAdmin, upload.single('image'), async (
         'name=$1, category_id=$2, price=$3, description=$4,' +
         'socket=$5, ram_type=$6, memory_size=$7, chipset=$8,' +
         'form_factor=$9, capacity=$10, wattage=$11, efficiency=$12,' +
-        'case_size=$13, fan_size=$14, cooler_type=$15 ' +
-      'WHERE id=$16',
+        'case_size=$13, fan_size=$14, cooler_type=$15 WHERE id=$16',
       [
         data.name, data.category_id, data.price, data.description,
         data.socket, data.ram_type, data.memory_size, data.chipset,
@@ -225,11 +211,8 @@ app.put('/api/admin/products/:id', requireAdmin, upload.single('image'), async (
       ]
     );
     if (req.file) {
-      const u = `/uploads/${req.file.filename}`;
-      await client.query(
-        'UPDATE products SET image_url=$1 WHERE id=$2',
-        [u, id]
-      );
+      const u = '/uploads/' + req.file.filename;
+      await client.query('UPDATE products SET image_url=$1 WHERE id=$2', [u, id]);
     }
     res.json({ success: true });
   } catch (err) {
@@ -243,10 +226,7 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/admin/inventory/:id', requireAdmin, async (req, res) => {
-  await client.query(
-    'UPDATE inventory SET stock=$1 WHERE product_id=$2',
-    [req.body.stock, req.params.id]
-  );
+  await client.query('UPDATE inventory SET stock=$1 WHERE product_id = $2', [req.body.stock, req.params.id]);
   res.json({ success: true });
 });
 
