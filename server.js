@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -12,7 +13,7 @@ const { client, init } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
+// Serve static files from 'public'
 app.use(cors());
 app.use(bodyParser.json());
 app.use(session({
@@ -22,7 +23,7 @@ app.use(session({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Setup uploads
+// Setup uploads folder
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 const storage = multer.diskStorage({
@@ -39,7 +40,7 @@ init().catch(err => {
 });
 
 // Auth middleware
-efunction requireAuth(req, res, next) {
+function requireAuth(req, res, next) {
   if (req.session.user) return next();
   res.status(401).json({ error: 'Not logged in' });
 }
@@ -246,4 +247,6 @@ app.get('/api/admin/orders', requireAdmin, async (req, res) => {
   res.json(rows);
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
