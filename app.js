@@ -31,71 +31,130 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartTotal = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
   const closeCartBtn = document.getElementById('close-cart');
-  const detailModal = document.getElementById('modal-detail');
-  const closeDetail = document.getElementById('close-detail');
-  const detailImage = document.getElementById('detail-image');
-  const detailName = document.getElementById('detail-name');
-  const detailCategory = document.getElementById('detail-category');
-  const detailPrice = document.getElementById('detail-price');
-  const detailDescription = document.getElementById('detail-description');
-  const detailMore = document.getElementById('detail-more');
-  const detailAddBtn = document.getElementById('detail-add-to-cart');
 
-  // Event listeners for login/register omitted for brevity
+  // Modal toggles
+  btnLogin.onclick = () => modalLogin.classList.remove('hidden');
+  btnRegister.onclick = () => modalRegister.classList.remove('hidden');
+  closes.forEach(b => b.onclick = () => {
+    modalLogin.classList.add('hidden');
+    modalRegister.classList.add('hidden');
+    loginErr.textContent = '';
+    regErr.textContent = '';
+  });
 
-  // Load data
+  // Render auth controls
+  function renderAuth() {
+    if (user) {
+      btnLogin.classList.add('hidden');
+      btnRegister.classList.add('hidden');
+      btnLogout.classList.remove('hidden');
+      btnCart.classList.remove('hidden');
+      btnAdmin.classList.toggle('hidden', !user.is_admin);
+      userInfo.textContent = user.username;
+    } else {
+      btnLogin.classList.remove('hidden');
+      btnRegister.classList.remove('hidden');
+      btnLogout.classList.add('hidden');
+      btnCart.classList.add('hidden');
+      btnAdmin.classList.add('hidden');
+      userInfo.textContent = '';
+    }
+  }
+
+  // Fetch current user
+  async function fetchUser() {
+    const res = await apiJson('/api/me');
+    user = res.user;
+    renderAuth();
+  }
+
+  // Login
+  document.getElementById('login-submit').onclick = async () => {
+    const res = await apiJson('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: loginUser.value, password: loginPass.value })
+    });
+    if (res.error) loginErr.textContent = res.error;
+    else {
+      modalLogin.classList.add('hidden');
+      await fetchUser();
+      loadAll();
+    }
+  };
+
+  // Register
+  document.getElementById('reg-submit').onclick = async () => {
+    const res = await apiJson('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name: regName.value, shipping_address: regAddr.value, username: regUser.value, password: regPass.value })
+    });
+    if (res.error) regErr.textContent = res.error;
+    else {
+      modalRegister.classList.add('hidden');
+      await fetchUser();
+      loadAll();
+    }
+  };
+
+  // Logout
+  btnLogout.onclick = async () => {
+    await apiJson('/api/logout', { method: 'POST' });
+    user = null;
+    renderAuth();
+  };
+
+  // Load categories & products
   async function loadAll() {
     categories = await apiJson('/api/categories');
     products   = await apiJson('/api/products');
     populateCategories();
     applyFilters();
   }
-
   function populateCategories() {
-    catFilter.innerHTML = '<option value="">All Categories</option>' +
-      categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    catFilter.innerHTML = '<option value="">All Categories</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
 
+  // Filters & sorting
   function applyFilters() {
     const term = searchInput.value.toLowerCase();
     const sort = sortSelect.value;
     const cat  = catFilter.value;
 
-    filtered = products
-      .filter(p => (!cat || p.category_id == cat))
-      .filter(p => p.name.toLowerCase().includes(term));
-
+    filtered = products.filter(p => (!cat || p.category_id == cat) && p.name.toLowerCase().includes(term));
     if (sort === 'price-asc')  filtered.sort((a,b) => a.price - b.price);
     if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
-
     renderProducts();
   }
 
+  // Render products
   function renderProducts() {
     grid.innerHTML = '';
-    const template = document.getElementById('product-card-template');
+    const tpl = document.getElementById('product-card-template');
     filtered.forEach(p => {
-      const clone = template.content.cloneNode(true);
+      const clone = tpl.content.cloneNode(true);
       const card  = clone.querySelector('.card');
       card.dataset.id = p.id;
       clone.querySelector('img').src = p.image_url || 'https://via.placeholder.com/300x150';
       clone.querySelector('img').alt = p.name;
       clone.querySelector('h3').textContent = p.name;
       clone.querySelector('.price').textContent = `$${p.price.toFixed(2)}`;
-
-      // Add to cart button
-      const btn = clone.querySelector('.add-btn');
-      btn.onclick = e => { e.stopPropagation(); addToCart(p.id); };
-
-      // Card click for details
+      clone.querySelector('.add-btn').onclick = e => { e.stopPropagation(); addToCart(p.id); };
       card.onclick = () => openDetail(p.id);
-
       grid.appendChild(clone);
     });
   }
 
-  // Cart & detail modal functions omitted for brevity
+  // Cart functions (omitted)
+  function addToCart(id) { /* ... */ }
+  function openDetail(id) { /* ... */ }
 
-  // Initialization
-  loadAll();
+  // Event bindings
+  searchInput.oninput = applyFilters;
+  sortSelect.onchange = applyFilters;
+  catFilter.onchange = applyFilters;
+
+  // Init
+  fetchUser().then(loadAll);
 });
