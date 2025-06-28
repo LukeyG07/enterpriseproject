@@ -2,9 +2,9 @@
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  type TEXT NOT NULL,        -- e.g. CPU, Motherboard, RAM
-  socket TEXT,               -- for CPU & Motherboard compatibility
-  ram_type TEXT,             -- for RAM & Motherboard compatibility
+  type TEXT NOT NULL,
+  socket TEXT,
+  ram_type TEXT,
   price NUMERIC(10,2) NOT NULL,
   description TEXT
 );
