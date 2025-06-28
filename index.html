@@ -20,7 +20,7 @@
       </nav>
     </header>
 
-    <!-- Modals -->
+    <!-- Login Modal -->
     <div id="modal-login" class="modal hidden">
       <div class="modal-content">
         <h2>Login</h2>
@@ -30,10 +30,11 @@
         <input id="login-password" type="password" placeholder="Password">
         <div id="login-error" class="error"></div>
         <button id="login-submit">Login</button>
-        <button class="modal-close">Cancel</button>
+        <button class="modal-close" id="cancel-login">Cancel</button>
       </div>
     </div>
 
+    <!-- Register Modal -->
     <div id="modal-register" class="modal hidden">
       <div class="modal-content">
         <h2>Register</h2>
@@ -47,7 +48,21 @@
         <input id="reg-password" type="password" placeholder="Password">
         <div id="reg-error" class="error"></div>
         <button id="reg-submit">Register</button>
-        <button class="modal-close">Cancel</button>
+        <button class="modal-close" id="cancel-register">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="modal-detail" class="modal hidden">
+      <div class="modal-content">
+        <button class="modal-close" id="close-detail">Close</button>
+        <img id="detail-image" src="" alt="">
+        <h2 id="detail-name"></h2>
+        <p id="detail-category"></p>
+        <p id="detail-price"></p>
+        <p id="detail-description"></p>
+        <div id="detail-more"></div>
+        <button id="detail-add-to-cart">Add to Cart</button>
       </div>
     </div>
 
