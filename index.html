@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PC Parts Retail Store</title>
+  <title>PC Parts Retail</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,13 +13,14 @@
       <nav>
         <button id="btn-login">Login</button>
         <button id="btn-register">Register</button>
+        <a id="btn-admin" href="admin.html" class="hidden">Admin</a>
         <span id="user-info"></span>
         <button id="btn-logout" class="hidden">Logout</button>
         <button id="btn-cart" class="hidden">Cart (<span id="cart-count">0</span>)</button>
       </nav>
     </header>
 
-    <!-- Login Modal -->
+    <!-- Modals -->
     <div id="modal-login" class="modal hidden">
       <div class="modal-content">
         <h2>Login</h2>
@@ -33,7 +34,6 @@
       </div>
     </div>
 
-    <!-- Register Modal -->
     <div id="modal-register" class="modal hidden">
       <div class="modal-content">
         <h2>Register</h2>
@@ -52,11 +52,17 @@
     </div>
 
     <main>
-      <section id="browse">
-        <h2>Browse Products</h2>
+      <h2>Browse Products</h2>
+      <div class="filters">
+        <input type="text" id="search-input" placeholder="Search products…">
+        <select id="sort-select">
+          <option value="default">Relevance</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+        </select>
         <select id="category-filter"></select>
-        <div id="products-grid" class="grid"></div>
-      </section>
+      </div>
+      <div id="products-grid" class="grid"></div>
     </main>
 
     <aside id="cart-panel" class="hidden">
