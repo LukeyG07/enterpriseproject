@@ -3,7 +3,10 @@ const { Client } = require('pg');
 const fs = require('fs');
 require('dotenv').config();
 
-const client = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 async function init() {
   await client.connect();
