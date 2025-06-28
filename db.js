@@ -1,4 +1,3 @@
-// db.js: PostgreSQL client setup & initial schema run
 const { Client } = require('pg');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
@@ -11,18 +10,16 @@ const client = new Client({
 
 async function init() {
   await client.connect();
-  const schema = fs.readFileSync('./schema.sql').toString();
-  await client.query(schema);
-
-  // Create default admin user if not exists
-  const res = await client.query("SELECT id FROM users WHERE username='admin'");
-  if (res.rows.length === 0) {
+  await client.query(fs.readFileSync('./schema.sql').toString());
+  // Seed admin
+  const { rows } = await client.query("SELECT id FROM users WHERE username='admin'");
+  if (!rows.length) {
     const hash = await bcrypt.hash('password', 10);
     await client.query(
-      'INSERT INTO users(username,password,is_admin) VALUES($1,$2,$3)',
-      ['admin', hash, true]
+      'INSERT INTO users(username,password,full_name,shipping_address,is_admin) VALUES($1,$2,$3,$4,$5)',
+      ['admin', hash, 'Administrator', 'HQ', true]
     );
-    console.log('Default admin user created: admin / password');
+    console.log('Admin user created (admin/password)');
   }
 }
 
