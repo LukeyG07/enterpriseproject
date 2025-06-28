@@ -8,15 +8,46 @@
 </head>
 <body>
   <header>
-    <h1>PC Parts Retail Store</h1>
-    <button id="open-cart" class="cart-btn">Cart (<span id="cart-count">0</span>)</button>
+    <div class="brand">PC Parts Retail Store</div>
+    <nav>
+      <span id="user-info"></span>
+      <button id="logout-btn" class="hidden">Logout</button>
+      <button id="open-cart" class="cart-btn hidden">Cart (<span id="cart-count">0</span>)</button>
+    </nav>
   </header>
-  <main id="app"></main>
+  <aside id="login-panel">
+    <h2>Login</h2>
+    <input id="login-username" placeholder="Username" />
+    <input id="login-password" type="password" placeholder="Password" />
+    <button id="login-btn">Login</button>
+    <div id="login-error" class="error"></div>
+  </aside>
+  <main id="app" class="hidden">
+    <section id="browse-section">
+      <h2>Browse Products</h2>
+      <select id="category-filter">
+        <option value="">All Categories</option>
+      </select>
+      <div id="product-list" class="grid"></div>
+    </section>
+    <section id="admin-nav" class="hidden">
+      <button id="admin-products-btn">Products & Stock</button>
+      <button id="admin-orders-btn">Orders</button>
+    </section>
+    <section id="admin-products-panel" class="hidden">
+      <h2>Manage Products & Stock</h2>
+      <button id="new-product-btn">New Product</button>
+      <div id="product-admin-list"></div>
+    </section>
+    <section id="admin-orders-panel" class="hidden">
+      <h2>Orders</h2>
+      <ul id="orders-list"></ul>
+    </section>
+  </main>
   <aside id="cart" class="hidden">
     <h2>Your Cart</h2>
     <ul id="cart-items"></ul>
     <div>Total: $<span id="cart-total">0.00</span></div>
-    <input type="email" id="checkout-email" placeholder="Enter your email" />
     <button id="checkout-btn">Checkout</button>
     <button id="close-cart">Close</button>
   </aside>
