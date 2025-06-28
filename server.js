@@ -103,12 +103,7 @@ res.json(rows);
 });
 
 app.get('/api/products', async (req, res) => {
-const { rows } = await client.query(
-SELECT p.*, c.name AS category, i.stock
-     FROM products p
-     JOIN categories c ON p.category_id = c.id
-     JOIN inventory i ON p.id = i.product_id
-);
+const { rows } = await client.query('SELECT p.*, c.name AS category, i.stock FROM products p JOIN categories c ON p.category_id = c.id JOIN inventory i ON p.id = i.product_id');
 res.json(rows);
 });
 
@@ -206,11 +201,7 @@ res.json({ success: true });
 });
 
 app.get('/api/admin/orders', requireAdmin, async (req, res) => {
-const { rows } = await client.query(
-SELECT o.id, u.username, o.total, o.created_at
-     FROM orders o LEFT JOIN users u ON u.id = o.user_id
-     ORDER BY o.created_at DESC
-);
+const { rows } = await client.query('SELECT o.id, u.username, o.total, o.created_at FROM orders o LEFT JOIN users u ON u.id = o.user_id ORDER BY o.created_at DESC');
 res.json(rows);
 });
 
