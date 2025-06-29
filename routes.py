@@ -1,19 +1,23 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import current_user, login_user, logout_user, login_required
-from run import env, db, login
+from extensions import login, db
+from app import create_app
 from forms import RegistrationForm, LoginForm, ProductForm
 from models import User, Product, Category
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+# use app instance from app.py
+app = create_app()
 
-@env.route('/')
+@login.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/')
 def index():
     cats = Category.query.all()
     return render_template('index.html', categories=cats)
 
-@env.route('/register', methods=['GET','POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -27,7 +31,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-@env.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -40,12 +44,12 @@ def login():
         flash('Invalid credentials.')
     return render_template('login.html', form=form)
 
-@env.route('/logout')
+@app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@env.route('/admin')
+@app.route('/admin')
 @login_required
 def admin_dashboard():
     if not current_user.is_admin:
@@ -54,7 +58,7 @@ def admin_dashboard():
     products = Product.query.all()
     return render_template('admin.html', products=products)
 
-@env.route('/admin/product/add', methods=['GET','POST'])
+@app.route('/admin/product/add', methods=['GET','POST'])
 @login_required
 def add_product():
     if not current_user.is_admin:
