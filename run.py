@@ -13,7 +13,8 @@ env.config.from_object(Config)
  login = LoginManager(env)
  login.login_view = 'login'
 
-# Models must be imported before routes\ nimport models, routes
+# Import models and routes (must come after db init)
+ import models, routes
 
 # Initialize DB and default admin
 with env.app_context():
@@ -26,4 +27,4 @@ with env.app_context():
         db.session.commit()
 
 if __name__ == '__main__':
-    env.run(debug=True)
+    env.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
