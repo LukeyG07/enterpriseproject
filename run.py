@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,13 +9,13 @@ env = Flask(__name__, template_folder='.', static_folder='.', static_url_path=''
 env.config.from_object(Config)
 
 # Extensions
- db = SQLAlchemy(env)
- migrate = Migrate(env, db)
- login = LoginManager(env)
- login.login_view = 'login'
+db = SQLAlchemy(env)
+migrate = Migrate(env, db)
+login = LoginManager(env)
+login.login_view = 'login'
 
-# Import models and routes (must come after db init)
- import models, routes
+# Import models and routes (after db init)
+import models, routes
 
 # Initialize DB and default admin
 with env.app_context():
@@ -26,5 +27,7 @@ with env.app_context():
         db.session.add(admin)
         db.session.commit()
 
+# Start the app
 if __name__ == '__main__':
-    env.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    port = int(os.environ.get('PORT', 5000))
+    env.run(debug=True, host='0.0.0.0', port=port)
