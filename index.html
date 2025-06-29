@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Browse Categories{% endblock %}
+{% block content %}
+<h1>Categories</h1>
+<ul>
+  {% for cat in categories %}
+    <li>{{ cat.name }}</li>
+  {% else %}<li>No categories yet.</li>{% endfor %}
+</ul>
+{% endblock %}
+```
+
+**login.html**
+```html
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h2>Login</h2>
+<form method="post">{{ form.hidden_tag() }}
+  {{ form.username.label }} {{ form.username() }}<br>
+  {{ form.password.label }} {{ form.password() }}<br>
+  {{ form.remember_me() }} {{ form.remember_me.label }}<br>
+  {{ form.submit() }}
+</form>
+{% endblock %}
