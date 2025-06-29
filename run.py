@@ -1,24 +1,23 @@
 import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
 from config import Config
+from extensions import db, migrate, login
 
-env = Flask(__name__, template_folder='.', static_folder='.', static_url_path='')
-env.config.from_object(Config)
+# create app
+app = Flask(__name__, template_folder='.', static_folder='.', static_url_path='')
+app.config.from_object(Config)
 
-# Extensions
-db = SQLAlchemy(env)
-migrate = Migrate(env, db)
-login = LoginManager(env)
-login.login_view = 'login'
+# initialize extensions with app
+db.init_app(app)
+migrate.init_app(app, db)
+login.init_app(app)
 
-# Import models and routes (after db init)
-import models, routes
+# import modules that use extensions
+import models  # noqa: F401
+import routes  # noqa: F401
 
-# Initialize DB and default admin
-with env.app_context():
+# initialize DB & create default admin
+with app.app_context():
     db.create_all()
     from models import User
     if not User.query.filter_by(username='admin').first():
@@ -27,7 +26,7 @@ with env.app_context():
         db.session.add(admin)
         db.session.commit()
 
-# Start the app
+# run server
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    env.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
