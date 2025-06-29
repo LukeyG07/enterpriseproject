@@ -1,0 +1,4 @@
+[phases]
+
+  [phases.start]
+  command = "python run.py"
